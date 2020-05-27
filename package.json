@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "",
   "eggPlugin": {
-    "name": "mqHttpSdk"
+    "name": "mqHttpSdk",
+    "dependencies": [
+      "schedule"
+    ]
   },
   "keywords": [
     "egg",
