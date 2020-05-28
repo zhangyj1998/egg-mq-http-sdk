@@ -64,7 +64,7 @@ exports.mqHttpSdk = {
       service?: 's2',
       method?: 'm2',
   }],
-  pollingInterval: 3, // 轮询间隔
+  pollingInterval: 3000, // 轮询间隔 ms
 };
 ```
 ## Example
