@@ -49,7 +49,7 @@ export default (agent: Agent & { mqClient: MQClient }) => {
             return;
         }
         ctx.runInBackground(async () => {
-            setInterval(async () => {
+            while (true) {
                 try {
                     await Promise.all([
                         ...(mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
@@ -58,7 +58,10 @@ export default (agent: Agent & { mqClient: MQClient }) => {
                 } catch (error) {
                     agent.logger.error(`mq_polling error`, error);
                 }
-            }, mqConf.pollingInterval || 0);
+                if (mqConf.pollingInterval > 0) {
+                    await sleep(mqConf.pollingInterval);
+                }
+            }
         })
     });
 };
@@ -85,4 +88,8 @@ async function consumeMessage(agent: Agent, c: { conf: ConsumerConfig, instance:
             agent.logger.error(`consumeMessage error`, error);
         }
     }
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
