@@ -185,7 +185,7 @@ export interface MessageProperties {
 
 const createMessageProperties = () => {
     const mqHttpSdk = require('@aliyunmq/mq-http-sdk');
-    return new mqHttpSdk.MessageProperties();
+    return new mqHttpSdk.MessageProperties() as MessageProperties;
 }
 export { createMessageProperties };
 

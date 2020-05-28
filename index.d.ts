@@ -143,7 +143,7 @@ export interface MessageProperties {
      */
     check(key: string): void;
 }
-declare const createMessageProperties: () => any;
+declare const createMessageProperties: () => MessageProperties;
 export { createMessageProperties };
 /**
  * MQ的消息生产者
