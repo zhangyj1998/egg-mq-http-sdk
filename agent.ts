@@ -30,6 +30,7 @@ interface MqHttpSdkConfig {
     securityToken: string;
     producers: ProducerConfig[];
     consumers: ConsumerConfig[];
+    pollingInterval: number;
 }
 
 export default (agent: Agent & { mqClient: MQClient }) => {
@@ -48,7 +49,7 @@ export default (agent: Agent & { mqClient: MQClient }) => {
             return;
         }
         ctx.runInBackground(async () => {
-            while (true) {
+            setInterval(async () => {
                 try {
                     await Promise.all([
                         ...(mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
@@ -57,7 +58,7 @@ export default (agent: Agent & { mqClient: MQClient }) => {
                 } catch (error) {
                     agent.logger.error(`mq_polling error`, error);
                 }
-            }
+            }, mqConf.pollingInterval || 0);
         })
     });
 };

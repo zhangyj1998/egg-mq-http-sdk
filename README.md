@@ -63,7 +63,8 @@ exports.mqHttpSdk = {
       messageTag?: '',
       service?: 's2',
       method?: 'm2',
-  }]
+  }],
+  pollingInterval: 3, // 轮询间隔
 };
 ```
 ## Example

@@ -15,7 +15,7 @@ exports.default = (agent) => {
             return;
         }
         ctx.runInBackground(async () => {
-            while (true) {
+            setInterval(async () => {
                 try {
                     await Promise.all([
                         ...(mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
@@ -25,7 +25,7 @@ exports.default = (agent) => {
                 catch (error) {
                     agent.logger.error(`mq_polling error`, error);
                 }
-            }
+            }, mqConf.pollingInterval || 0);
         });
     });
 };

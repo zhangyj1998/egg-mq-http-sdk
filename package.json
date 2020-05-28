@@ -1,6 +1,6 @@
 {
   "name": "egg-mq-http-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "",
   "eggPlugin": {
     "name": "mqHttpSdk"
