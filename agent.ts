@@ -23,7 +23,7 @@ interface ConsumerConfig {
     method: string;
 }
 
-interface RocketmqConfig {
+interface MqHttpSdkConfig {
     endpoint: string;
     accessKeyId: string;
     accessKeySecret: string;
@@ -36,7 +36,7 @@ export default (agent: Agent & { mqClient: MQClient }) => {
 
     const ctx = agent.createAnonymousContext();
 
-    const mqConf = agent.config.rocketmq as RocketmqConfig;
+    const mqConf = agent.config.mqHttpSdk as MqHttpSdkConfig;
     try {
         agent.mqClient = new MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret, mqConf.securityToken);
     } catch (error) {
@@ -51,8 +51,8 @@ export default (agent: Agent & { mqClient: MQClient }) => {
             while (true) {
                 try {
                     await Promise.all([
-                        ...mqConf.producers.map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
-                        ...mqConf.consumers.map(c => ({ conf: c, instance: agent.mqClient.getConsumer(c.instanceId, c.topic, c.groupId, c.messageTag) })).map(c => consumeMessage(agent, c)),
+                        ...(mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
+                        ...(mqConf.consumers || []).map(c => ({ conf: c, instance: agent.mqClient.getConsumer(c.instanceId, c.topic, c.groupId, c.messageTag) })).map(c => consumeMessage(agent, c)),
                     ])
                 } catch (error) {
                     agent.logger.error(`mq_polling error`, error);

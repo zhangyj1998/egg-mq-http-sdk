@@ -5,7 +5,7 @@ export default (app: Application) => {
 
     const ctx = app.createAnonymousContext();
 
-    const mqConf = app.config.rocketmq;
+    const mqConf = app.config.mqHttpSdk;
     try {
         (app as any).mqClient = new MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret, mqConf.securityToken);
     } catch (error) {

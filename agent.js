@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mq_http_sdk_1 = require("@aliyunmq/mq-http-sdk");
 exports.default = (agent) => {
     const ctx = agent.createAnonymousContext();
-    const mqConf = agent.config.rocketmq;
+    const mqConf = agent.config.mqHttpSdk;
     try {
         agent.mqClient = new mq_http_sdk_1.MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret, mqConf.securityToken);
     }
@@ -18,8 +18,8 @@ exports.default = (agent) => {
             while (true) {
                 try {
                     await Promise.all([
-                        ...mqConf.producers.map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
-                        ...mqConf.consumers.map(c => ({ conf: c, instance: agent.mqClient.getConsumer(c.instanceId, c.topic, c.groupId, c.messageTag) })).map(c => consumeMessage(agent, c)),
+                        ...(mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
+                        ...(mqConf.consumers || []).map(c => ({ conf: c, instance: agent.mqClient.getConsumer(c.instanceId, c.topic, c.groupId, c.messageTag) })).map(c => consumeMessage(agent, c)),
                     ]);
                 }
                 catch (error) {

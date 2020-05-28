@@ -45,6 +45,25 @@ exports.mqHttpSdk = {
 ```js
 // {app_root}/config/config.default.js
 exports.mqHttpSdk = {
+  endpoint: '',
+  accessKeyId: '',
+  accessKeySecret: '',
+  securityToken?: '',
+  producers?: [{
+      instanceId: '',
+      topic: '',
+      groupId?: '',
+      service?: 's1',
+      method?: 'm1',
+  }],
+  consumers?: [{
+      instanceId: '',
+      topic: '',
+      groupId?: '',
+      messageTag?: '',
+      service?: 's2',
+      method?: 'm2',
+  }]
 };
 ```
 
@@ -52,7 +71,30 @@ see [config/config.default.js](config/config.default.js) for more detail.
 
 ## Example
 
-<!-- example here -->
+```js
+import { MQClient, createMessageProperties, ConsumeMessageResponse } from 'egg-mq-http-sdk';
+
+const client: MQClient = (this.app as any).mqClient;
+
+const producer = client.getProducer(instanceId, topic); 
+const msgProps = createMessageProperties();
+msgProps.messageKey(message_key);
+await producer.publishMessage(body, tag, msgProps);
+
+const transProducer = client.getTransProducer(instanceId, topic, groupId);
+
+// 注册半消息回查 和 消费消息方法 注意一定要与config里配置的一致
+service s1: // 对应上面配置里的生产者回查半消息的回调
+  async m1(res: ConsumeMessageResponse){
+    xxx
+  }
+
+service s2: // 对应上面配置里的消费者消费消息的回调
+  async m2(res: ConsumeMessageResponse){
+    xxx
+  }
+
+```
 
 ## Questions & Suggestions
 

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mq_http_sdk_1 = require("@aliyunmq/mq-http-sdk");
 exports.default = (app) => {
     const ctx = app.createAnonymousContext();
-    const mqConf = app.config.rocketmq;
+    const mqConf = app.config.mqHttpSdk;
     try {
         app.mqClient = new mq_http_sdk_1.MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret, mqConf.securityToken);
     }
