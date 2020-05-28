@@ -27,6 +27,7 @@ interface RocketmqConfig {
     endpoint: string;
     accessKeyId: string;
     accessKeySecret: string;
+    securityToken: string;
     producers: ProducerConfig[];
     consumers: ConsumerConfig[];
 }
@@ -34,20 +35,19 @@ interface RocketmqConfig {
 export default (agent: Agent & { mqClient: MQClient }) => {
 
     const ctx = agent.createAnonymousContext();
+
     const mqConf = agent.config.rocketmq as RocketmqConfig;
     try {
-        agent.mqClient = new MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret);
-        agent.messenger.sendToApp('mq_start', agent.mqClient);
+        agent.mqClient = new MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret, mqConf.securityToken);
     } catch (error) {
         agent.logger.error(`mq_start error`, error);
     }
 
     agent.messenger.on('egg-ready', async () => {
-        // 长轮询监听待消费消息和半消息
+        if (!agent.mqClient) {
+            return;
+        }
         ctx.runInBackground(async () => {
-            if (!agent.mqClient) {
-                return;
-            }
             while (true) {
                 try {
                     await Promise.all([
@@ -66,13 +66,11 @@ export default (agent: Agent & { mqClient: MQClient }) => {
 async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, instance: MQTransProducer }) {
     try {
         const res = await p.instance.consumeHalfMessage(p.conf.numOfMessages || 3, p.conf.waitSeconds || 3);
-        if (res.code !== 200) {
-            agent.logger.error(`consumeHalfMessage error`, res);
-            return;
-        }
-        agent.messenger.sendRandom('mq_receive', { conf: p.conf, messages: res.body });
+        agent.messenger.sendRandom('mq_receive', { conf: p.conf, res });
     } catch (error) {
-        agent.logger.error(`consumeHalfMessage error`, error);
+        if (error.Code !== 'MessageNotExist') {
+            agent.logger.error(`consumeHalfMessage error`, error);
+        }
     }
 }
 
@@ -80,12 +78,10 @@ async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, insta
 async function consumeMessage(agent: Agent, c: { conf: ConsumerConfig, instance: MQConsumer }) {
     try {
         const res = await c.instance.consumeMessage(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
-        if (res.code !== 200) {
-            agent.logger.error(`consumeMessage error`, res);
-            return;
-        }
-        agent.messenger.sendRandom('mq_receive', { conf: c.conf, messages: res.body });
+        agent.messenger.sendRandom('mq_receive', { conf: c.conf, res });
     } catch (error) {
-        agent.logger.error(`consumeMessage error`, error);
+        if (error.Code !== 'MessageNotExist') {
+            agent.logger.error(`consumeMessage error`, error);
+        }
     }
 }

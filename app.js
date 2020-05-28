@@ -1,15 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const mq_http_sdk_1 = require("@aliyunmq/mq-http-sdk");
 exports.default = (app) => {
     const ctx = app.createAnonymousContext();
-    app.messenger.on('mq_start', (client) => {
-        app.mqClient = client;
-    });
-    app.messenger.on('mq_receive', async ({ conf, messages }) => {
+    const mqConf = app.config.rocketmq;
+    try {
+        app.mqClient = new mq_http_sdk_1.MQClient(mqConf.endpoint, mqConf.accessKeyId, mqConf.accessKeySecret, mqConf.securityToken);
+    }
+    catch (error) {
+        app.logger.error(`mq_start error`, error);
+    }
+    app.messenger.on('mq_receive', async ({ conf, res }) => {
         const { service, method } = conf;
+        if (!service || !method) {
+            return;
+        }
         ctx.runInBackground(async () => {
-            await ctx.service[service][method](messages);
+            await ctx.service[service][method](res);
         });
     });
 };
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXBwLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiYXBwLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBRUEsa0JBQWUsQ0FBQyxHQUFnQixFQUFFLEVBQUU7SUFFaEMsTUFBTSxHQUFHLEdBQUcsR0FBRyxDQUFDLHNCQUFzQixFQUFFLENBQUM7SUFFekMsR0FBRyxDQUFDLFNBQVMsQ0FBQyxFQUFFLENBQUMsVUFBVSxFQUFFLENBQUMsTUFBTSxFQUFFLEVBQUU7UUFDbkMsR0FBVyxDQUFDLFFBQVEsR0FBRyxNQUFNLENBQUM7SUFDbkMsQ0FBQyxDQUFDLENBQUE7SUFFRixHQUFHLENBQUMsU0FBUyxDQUFDLEVBQUUsQ0FBQyxZQUFZLEVBQUUsS0FBSyxFQUFFLEVBQUUsSUFBSSxFQUFFLFFBQVEsRUFBRSxFQUFFLEVBQUU7UUFDeEQsTUFBTSxFQUFFLE9BQU8sRUFBRSxNQUFNLEVBQUUsR0FBRyxJQUFJLENBQUM7UUFDakMsR0FBRyxDQUFDLGVBQWUsQ0FBQyxLQUFLLElBQUksRUFBRTtZQUMzQixNQUFNLEdBQUcsQ0FBQyxPQUFPLENBQUMsT0FBTyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsUUFBUSxDQUFDLENBQUM7UUFDakQsQ0FBQyxDQUFDLENBQUM7SUFDUCxDQUFDLENBQUMsQ0FBQztBQUVQLENBQUMsQ0FBQyJ9
+//# sourceMappingURL=app.js.map
