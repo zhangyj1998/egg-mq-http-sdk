@@ -1,13 +1,9 @@
 {
   "name": "egg-mq-http-sdk",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "eggPlugin": {
-    "name": "mqHttpSdk",
-    "dependencies": [
-      "schedule",
-      "logger"
-    ]
+    "name": "mqHttpSdk"
   },
   "keywords": [
     "egg",
@@ -15,8 +11,7 @@
     "egg-plugin"
   ],
   "dependencies": {
-    "@aliyunmq/mq-http-sdk": "^1.0.2",
-    "pg": "^8.2.1"
+    "@aliyunmq/mq-http-sdk": "^1.0.2"
   },
   "devDependencies": {
     "autod": "^3.0.1",
@@ -44,8 +39,8 @@
     "version": "8, 10"
   },
   "files": [
-    "config",
-    "app"
+    "app.js",
+    "agent.js"
   ],
   "repository": {
     "type": "git",
