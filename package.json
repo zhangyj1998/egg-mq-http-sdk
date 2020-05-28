@@ -1,6 +1,6 @@
 {
   "name": "egg-mq-http-sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "eggPlugin": {
     "name": "mqHttpSdk"
@@ -46,12 +46,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eggjs/egg-mq-http-sdk.git"
+    "url": "git+https://github.com/cuifan53/egg-mq-http-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/eggjs/egg/issues"
+    "url": "https://github.com/cuifan53/egg/issues"
   },
-  "homepage": "https://github.com/eggjs/egg-mq-http-sdk#readme",
+  "homepage": "https://github.com/cuifan53/egg-mq-http-sdk#readme",
   "author": "cuifan53",
   "license": "MIT"
 }

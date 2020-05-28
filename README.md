@@ -66,9 +66,6 @@ exports.mqHttpSdk = {
   }]
 };
 ```
-
-see [config/config.default.js](config/config.default.js) for more detail.
-
 ## Example
 
 ```js
@@ -98,7 +95,7 @@ service s2: // 对应上面配置里的消费者消费消息的回调
 
 ## Questions & Suggestions
 
-Please open an issue [here](https://github.com/eggjs/egg/issues).
+Please open an issue [here](https://github.com/cuifan53/egg/issues).
 
 ## License
 
