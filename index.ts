@@ -183,6 +183,12 @@ export interface MessageProperties {
 
 }
 
+const createMessageProperties = () => {
+    const mqHttpSdk = require('@aliyunmq/mq-http-sdk');
+    return new mqHttpSdk.MessageProperties();
+}
+export { createMessageProperties };
+
 /**
  * MQ的消息生产者
  */

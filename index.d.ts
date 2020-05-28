@@ -143,6 +143,8 @@ export interface MessageProperties {
      */
     check(key: string): void;
 }
+declare const createMessageProperties: () => any;
+export { createMessageProperties };
 /**
  * MQ的消息生产者
  */
@@ -223,4 +225,3 @@ export interface MQConsumer {
      */
     ackMessage(receiptHandles: string[]): Promise<Response>;
 }
-export {};
