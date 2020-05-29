@@ -1,4 +1,4 @@
-import { Application } from "egg";
+import { Application, Context } from "egg";
 
 interface Response {
     code: number;
@@ -289,18 +289,18 @@ export interface MQConsumer {
 
 }
 
-const consume = (app: Application & { mqConsumerCallback: Map<string, any> }, tag: string, fn: any) => {
-    if (!app.mqConsumerCallback) {
-        app.mqConsumerCallback = new Map();
+const consume = (app: Application, tag: string, fn: (ctx: Context, message: Message) => any) => {
+    if (!(app as any).mqConsumerCallback) {
+        (app as any).mqConsumerCallback = new Map();
     }
-    app.mqConsumerCallback.set(tag, fn);
+    (app as any).mqConsumerCallback.set(tag, fn);
 }
 export { consume };
 
-const transProduce = (app: Application & { mqTransProducerCallback: Map<string, any> }, tag: string, fn: any) => {
-    if (!app.mqTransProducerCallback) {
-        app.mqTransProducerCallback = new Map();
+const transProduce = (app: Application, tag: string, fn: (ctx: Context, message: Message) => any) => {
+    if (!(app as any).mqTransProducerCallback) {
+        (app as any).mqTransProducerCallback = new Map();
     }
-    app.mqTransProducerCallback.set(tag, fn);
+    (app as any).mqTransProducerCallback.set(tag, fn);
 }
 export { transProduce };

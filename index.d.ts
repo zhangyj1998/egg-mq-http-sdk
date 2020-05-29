@@ -1,4 +1,4 @@
-import { Application } from "egg";
+import { Application, Context } from "egg";
 interface Response {
     code: number;
     requestId: string;
@@ -227,11 +227,7 @@ export interface MQConsumer {
      */
     ackMessage(receiptHandles: string[]): Promise<Response>;
 }
-declare const consume: (app: Application & {
-    mqConsumerCallback: Map<string, any>;
-}, tag: string, fn: any) => void;
+declare const consume: (app: Application, tag: string, fn: (ctx: Context, message: Message) => any) => void;
 export { consume };
-declare const transProduce: (app: Application & {
-    mqTransProducerCallback: Map<string, any>;
-}, tag: string, fn: any) => void;
+declare const transProduce: (app: Application, tag: string, fn: (ctx: Context, message: Message) => any) => void;
 export { transProduce };
