@@ -28,7 +28,7 @@ export default (app: Application) => {
         }
         ctx.runInBackground(async () => {
             for (const b of res.body) {
-                await fn(b);
+                await fn(ctx, b);
             }
         })
     });
@@ -47,7 +47,7 @@ export default (app: Application) => {
         }
         ctx.runInBackground(async () => {
             for (const b of res.body) {
-                await fn(b);
+                await fn(ctx, b);
             }
         })
     });
