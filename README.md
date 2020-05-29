@@ -52,17 +52,13 @@ exports.mqHttpSdk = {
   producers?: [{
       instanceId: '',
       topic: '',
-      groupId?: '',
-      service?: 's1',
-      method?: 'm1',
+      groupId?: '', 
   }],
   consumers?: [{
       instanceId: '',
       topic: '',
       groupId?: '',
-      messageTag?: '',
-      service?: 's2',
-      method?: 'm2',
+      messageTags?: [''], 
   }],
   pollingInterval?: 3000, // 轮询间隔 ms 默认为0
 };
@@ -82,16 +78,18 @@ await producer.publishMessage(body, tag, msgProps);
 const transProducer = client.getTransProducer(instanceId, topic, groupId);
 
 // 注册半消息回查 和 消费消息方法 注意一定要与config里配置的一致
-service s1: // 对应上面配置里的生产者回查半消息的回调
-  async m1(res: ConsumeMessageResponse){
-    xxx
-  }
+app.ts:
 
-service s2: // 对应上面配置里的消费者消费消息的回调
-  async m2(res: ConsumeMessageResponse){
-    xxx
-  }
+import { consume, transProduce } from 'egg-mq-http-sdk';
 
+app.beforeStart(async () => {
+    consume(app, 'messageTag', async (ctx, consumer, message) => {
+      // 注册消费消息方法
+    });
+    transProduce(app, 'messageTag', (ctx, transProducer, message) => {
+      // 注册回查半消息方法
+    })
+});
 ```
 
 ## Questions & Suggestions

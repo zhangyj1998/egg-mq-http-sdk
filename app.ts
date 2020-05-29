@@ -1,7 +1,6 @@
 import { MQClient } from '@aliyunmq/mq-http-sdk';
 import { Application } from 'egg';
 import { isArray } from 'util';
-import { ConsumeMessageResponse } from '.';
 
 export default (app: Application) => {
 
@@ -14,26 +13,6 @@ export default (app: Application) => {
         app.logger.error(`mq_start error`, error);
     }
 
-    app.messenger.on('mq_consumer_receive', async ({ conf, res }) => {
-        if (!isArray(res.body) || res.body.length === 0) {
-            return;
-        }
-        const cb = (app as any).mqConsumerCallback;
-        if (!cb) {
-            return;
-        }
-        const fn = cb.get(res.body[0].MessageTag);
-        if (!fn) {
-            return;
-        }
-        ctx.runInBackground(async () => {
-            const consumer = (app as any).mqClient.getConsumer(conf.instanceId, conf.topic, conf.groupId, res.body[0].MessageTag);
-            for (const b of res.body) {
-                await fn(ctx, consumer, b);
-            }
-        })
-    });
-
     app.messenger.on('mq_trans_producer_receive', async ({ conf, res }) => {
         if (!isArray(res.body) || res.body.length === 0) {
             return;
@@ -42,14 +21,34 @@ export default (app: Application) => {
         if (!cb) {
             return;
         }
-        const fn = cb.get(res.body[0].MessageTag);
-        if (!fn) {
-            return;
-        }
         ctx.runInBackground(async () => {
             const transProducer = (app as any).mqClient.getTransProducer(conf.instanceId, conf.topic, conf.groupId);
             for (const b of res.body) {
+                const fn = cb.get(b.MessageTag);
+                if (!fn) {
+                    continue;
+                }
                 await fn(ctx, transProducer, b);
+            }
+        })
+    });
+
+    app.messenger.on('mq_consumer_receive', async ({ conf, res }) => {
+        if (!isArray(res.body) || res.body.length === 0) {
+            return;
+        }
+        const cb = (app as any).mqConsumerCallback;
+        if (!cb) {
+            return;
+        }
+        ctx.runInBackground(async () => {
+            for (const b of res.body) {
+                const consumer = (app as any).mqClient.getConsumer(conf.instanceId, conf.topic, conf.groupId, b.MessageTag);
+                const fn = cb.get(b.MessageTag);
+                if (!fn) {
+                    return;
+                }
+                await fn(ctx, consumer, b);
             }
         })
     });
