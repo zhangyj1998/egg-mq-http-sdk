@@ -77,16 +77,15 @@ await producer.publishMessage(body, tag, msgProps);
 
 const transProducer = client.getTransProducer(instanceId, topic, groupId);
 
-// 注册半消息回查 和 消费消息方法 注意一定要与config里配置的一致
-app.ts:
 
+app.ts:
 import { consume, transProduce } from 'egg-mq-http-sdk';
 
 app.beforeStart(async () => {
     consume(app, 'messageTag', async (ctx, consumer, message) => {
       // 注册消费消息方法
     });
-    transProduce(app, 'messageTag', (ctx, transProducer, message) => {
+    transProduce(app, 'messageTag', async (ctx, transProducer, message) => {
       // 注册回查半消息方法
     })
 });

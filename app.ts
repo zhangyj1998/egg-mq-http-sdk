@@ -46,7 +46,7 @@ export default (app: Application) => {
                 const consumer = (app as any).mqClient.getConsumer(conf.instanceId, conf.topic, conf.groupId, b.MessageTag);
                 const fn = cb.get(b.MessageTag);
                 if (!fn) {
-                    return;
+                    continue;
                 }
                 await fn(ctx, consumer, b);
             }
