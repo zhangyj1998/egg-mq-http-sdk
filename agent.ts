@@ -2,7 +2,7 @@ import { MQClient, MQConsumer, MQTransProducer } from '@aliyunmq/mq-http-sdk';
 import { Agent } from 'egg';
 import { isString } from 'util';
 
-interface ProducerConfig {
+export interface ProducerConfig {
     instanceId: string;
     topic: string;
     groupId: string;
@@ -10,7 +10,7 @@ interface ProducerConfig {
     waitSeconds: number;
 }
 
-interface ConsumerConfig {
+export interface ConsumerConfig {
     instanceId: string;
     topic: string;
     groupId: string;
@@ -19,7 +19,7 @@ interface ConsumerConfig {
     waitSeconds: number;
 }
 
-interface MqHttpSdkConfig {
+export interface MqHttpSdkConfig {
     endpoint: string;
     accessKeyId: string;
     accessKeySecret: string;
@@ -79,7 +79,7 @@ export default (agent: Agent & { mqClient: MQClient }) => {
 async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, instance: MQTransProducer }) {
     try {
         const res = await p.instance.consumeHalfMessage(p.conf.numOfMessages || 3, p.conf.waitSeconds || 3);
-        agent.messenger.sendRandom('mq_consumer_receive', res);
+        agent.messenger.sendRandom('mq_trans_producer_receive', { conf: p.conf, res });
     } catch (error) {
         if (error.Code !== 'MessageNotExist') {
             agent.logger.error(`consumeHalfMessage error`, error);
@@ -91,7 +91,7 @@ async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, insta
 async function consumeMessage(agent: Agent, c: { conf: ConsumerConfig, instance: MQConsumer }) {
     try {
         const res = await c.instance.consumeMessage(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
-        agent.messenger.sendRandom('mq_trans_producer_receive', res);
+        agent.messenger.sendRandom('mq_consumer_receive', { conf: c.conf, res });
     } catch (error) {
         if (error.Code !== 'MessageNotExist') {
             agent.logger.error(`consumeMessage error`, error);

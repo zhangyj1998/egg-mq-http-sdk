@@ -50,7 +50,7 @@ exports.default = (agent) => {
 async function consumeHalfMessage(agent, p) {
     try {
         const res = await p.instance.consumeHalfMessage(p.conf.numOfMessages || 3, p.conf.waitSeconds || 3);
-        agent.messenger.sendRandom('mq_consumer_receive', res);
+        agent.messenger.sendRandom('mq_trans_producer_receive', { conf: p.conf, res });
     }
     catch (error) {
         if (error.Code !== 'MessageNotExist') {
@@ -62,7 +62,7 @@ async function consumeHalfMessage(agent, p) {
 async function consumeMessage(agent, c) {
     try {
         const res = await c.instance.consumeMessage(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
-        agent.messenger.sendRandom('mq_trans_producer_receive', res);
+        agent.messenger.sendRandom('mq_consumer_receive', { conf: c.conf, res });
     }
     catch (error) {
         if (error.Code !== 'MessageNotExist') {

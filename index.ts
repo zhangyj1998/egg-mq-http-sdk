@@ -289,7 +289,7 @@ export interface MQConsumer {
 
 }
 
-const consume = (app: Application, tag: string, fn: (ctx: Context, message: Message) => any) => {
+const consume = (app: Application, tag: string, fn: (ctx: Context, consumer: MQConsumer, message: Message) => any) => {
     if (!(app as any).mqConsumerCallback) {
         (app as any).mqConsumerCallback = new Map();
     }
@@ -297,7 +297,7 @@ const consume = (app: Application, tag: string, fn: (ctx: Context, message: Mess
 }
 export { consume };
 
-const transProduce = (app: Application, tag: string, fn: (ctx: Context, message: Message) => any) => {
+const transProduce = (app: Application, tag: string, fn: (ctx: Context, transProducer: MQTransProducer, message: Message) => any) => {
     if (!(app as any).mqTransProducerCallback) {
         (app as any).mqTransProducerCallback = new Map();
     }

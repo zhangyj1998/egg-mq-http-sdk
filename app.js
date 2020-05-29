@@ -11,7 +11,7 @@ exports.default = (app) => {
     catch (error) {
         app.logger.error(`mq_start error`, error);
     }
-    app.messenger.on('mq_consumer_receive', async (res) => {
+    app.messenger.on('mq_consumer_receive', async ({ conf, res }) => {
         if (!util_1.isArray(res.body) || res.body.length === 0) {
             return;
         }
@@ -24,12 +24,13 @@ exports.default = (app) => {
             return;
         }
         ctx.runInBackground(async () => {
+            const consumer = app.mqClient.getConsumer(conf.instanceId, conf.topic, conf.groupId, res.body[0].MessageTag);
             for (const b of res.body) {
-                await fn(ctx, b);
+                await fn(ctx, consumer, b);
             }
         });
     });
-    app.messenger.on('mq_trans_producer_receive', async (res) => {
+    app.messenger.on('mq_trans_producer_receive', async ({ conf, res }) => {
         if (!util_1.isArray(res.body) || res.body.length === 0) {
             return;
         }
@@ -42,8 +43,9 @@ exports.default = (app) => {
             return;
         }
         ctx.runInBackground(async () => {
+            const transProducer = app.mqClient.getTransProducer(conf.instanceId, conf.topic, conf.groupId);
             for (const b of res.body) {
-                await fn(ctx, b);
+                await fn(ctx, transProducer, b);
             }
         });
     });
