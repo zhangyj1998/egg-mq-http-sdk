@@ -1,6 +1,6 @@
 {
   "name": "egg-mq-http-sdk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "",
   "eggPlugin": {
     "name": "mqHttpSdk"
@@ -14,6 +14,7 @@
     "@aliyunmq/mq-http-sdk": "^1.0.2"
   },
   "devDependencies": {
+    "@types/node": "^14.0.5",
     "autod": "^3.0.1",
     "autod-egg": "^1.1.0",
     "egg": "^2.16.0",

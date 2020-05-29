@@ -1,3 +1,5 @@
+import { Application } from "egg";
+
 interface Response {
     code: number;
     requestId: string;
@@ -5,6 +7,31 @@ interface Response {
 
 interface ClientResponse extends Response {
     body: any;
+}
+
+export interface Message {
+    // 消息ID
+    MessageId: string;
+    // 消息体MD5
+    MessageBodyMD5: string;
+    // 发送消息的时间戳，毫秒
+    PublishTime: number;
+    // 下次重试消费的时间，前提是这次不调用{ackMessage} 确认消费消费成功，毫秒
+    NextConsumeTime: number;
+    // 第一次消费的时间，毫秒
+    FirstConsumeTime: number;
+    // 消费的次数
+    ConsumedTimes: number;
+    // 消息句柄，调用 {ackMessage} 需要将消息句柄传入，用于确认该条消息消费成功
+    ReceiptHandle: string;
+    // 消息内容
+    MessageBody: string;
+    // 消息标签
+    MessageTag: string;
+    // 消息Key
+    MessageKey?: string;
+    // 额外属性
+    [propName: string]: any;
 }
 
 export interface PublishMessageResponse extends Response {
@@ -21,30 +48,7 @@ export interface PublishMessageResponse extends Response {
 }
 
 export interface ConsumeMessageResponse extends Response {
-    body: {
-        // 消息ID
-        MessageId: string;
-        // 消息体MD5
-        MessageBodyMD5: string;
-        // 发送消息的时间戳，毫秒
-        PublishTime: number;
-        // 下次重试消费的时间，前提是这次不调用{ackMessage} 确认消费消费成功，毫秒
-        NextConsumeTime: number;
-        // 第一次消费的时间，毫秒
-        FirstConsumeTime: number;
-        // 消费的次数
-        ConsumedTimes: number;
-        // 消息句柄，调用 {ackMessage} 需要将消息句柄传入，用于确认该条消息消费成功
-        ReceiptHandle: string;
-        // 消息内容
-        MessageBody: string;
-        // 消息标签
-        MessageTag: string;
-        // 消息Key
-        MessageKey?: string;
-        // 额外属性
-        [propName: string]: any;
-    }[];
+    body: Message[];
 }
 
 /**
@@ -285,3 +289,18 @@ export interface MQConsumer {
 
 }
 
+const consume = (app: Application & { mqConsumerCallback: Map<string, any> }, tag: string, fn: any) => {
+    if (!app.mqConsumerCallback) {
+        app.mqConsumerCallback = new Map();
+    }
+    app.mqConsumerCallback.set(tag, fn);
+}
+export { consume };
+
+const transProduce = (app: Application & { mqTransProducerCallback: Map<string, any> }, tag: string, fn: any) => {
+    if (!app.mqTransProducerCallback) {
+        app.mqTransProducerCallback = new Map();
+    }
+    app.mqTransProducerCallback.set(tag, fn);
+}
+export { transProduce };

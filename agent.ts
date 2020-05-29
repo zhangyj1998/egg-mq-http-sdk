@@ -1,26 +1,22 @@
-import { MQConsumer, MQTransProducer, MQClient } from '@aliyunmq/mq-http-sdk';
+import { MQClient, MQConsumer, MQTransProducer } from '@aliyunmq/mq-http-sdk';
 import { Agent } from 'egg';
+import { isString } from 'util';
 
 interface ProducerConfig {
     instanceId: string;
     topic: string;
     groupId: string;
-    messageTag: string;
     numOfMessages: number;
     waitSeconds: number;
-    service: string;
-    method: string;
 }
 
 interface ConsumerConfig {
     instanceId: string;
     topic: string;
     groupId: string;
-    messageTag: string;
+    messageTags: string[];
     numOfMessages: number;
     waitSeconds: number;
-    service: string;
-    method: string;
 }
 
 interface MqHttpSdkConfig {
@@ -51,9 +47,22 @@ export default (agent: Agent & { mqClient: MQClient }) => {
         ctx.runInBackground(async () => {
             while (true) {
                 try {
+                    const producers = (mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) }));
+                    const consumers: { conf: ConsumerConfig, instance: MQConsumer }[] = [];
+                    (mqConf.consumers || []).forEach(c => {
+                        if (isString(c.messageTags)) {
+                            c.messageTags = [c.messageTags];
+                        }
+                        (c.messageTags || []).forEach(tag => {
+                            consumers.push({
+                                conf: c,
+                                instance: agent.mqClient.getConsumer(c.instanceId, c.topic, c.groupId, tag),
+                            })
+                        })
+                    })
                     await Promise.all([
-                        ...(mqConf.producers || []).map(p => ({ conf: p, instance: agent.mqClient.getTransProducer(p.instanceId, p.topic, p.groupId) })).map(p => consumeHalfMessage(agent, p)),
-                        ...(mqConf.consumers || []).map(c => ({ conf: c, instance: agent.mqClient.getConsumer(c.instanceId, c.topic, c.groupId, c.messageTag) })).map(c => consumeMessage(agent, c)),
+                        ...producers.map(p => consumeHalfMessage(agent, p)),
+                        ...consumers.map(c => consumeMessage(agent, c)),
                     ])
                 } catch (error) {
                     agent.logger.error(`mq_polling error`, error);
@@ -70,7 +79,7 @@ export default (agent: Agent & { mqClient: MQClient }) => {
 async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, instance: MQTransProducer }) {
     try {
         const res = await p.instance.consumeHalfMessage(p.conf.numOfMessages || 3, p.conf.waitSeconds || 3);
-        agent.messenger.sendRandom('mq_receive', { conf: p.conf, res });
+        agent.messenger.sendRandom('mq_consumer_receive', res);
     } catch (error) {
         if (error.Code !== 'MessageNotExist') {
             agent.logger.error(`consumeHalfMessage error`, error);
@@ -82,7 +91,7 @@ async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, insta
 async function consumeMessage(agent: Agent, c: { conf: ConsumerConfig, instance: MQConsumer }) {
     try {
         const res = await c.instance.consumeMessage(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
-        agent.messenger.sendRandom('mq_receive', { conf: c.conf, res });
+        agent.messenger.sendRandom('mq_trans_producer_receive', res);
     } catch (error) {
         if (error.Code !== 'MessageNotExist') {
             agent.logger.error(`consumeMessage error`, error);

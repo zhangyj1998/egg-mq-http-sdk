@@ -1,9 +1,23 @@
+import { Application } from "egg";
 interface Response {
     code: number;
     requestId: string;
 }
 interface ClientResponse extends Response {
     body: any;
+}
+export interface Message {
+    MessageId: string;
+    MessageBodyMD5: string;
+    PublishTime: number;
+    NextConsumeTime: number;
+    FirstConsumeTime: number;
+    ConsumedTimes: number;
+    ReceiptHandle: string;
+    MessageBody: string;
+    MessageTag: string;
+    MessageKey?: string;
+    [propName: string]: any;
 }
 export interface PublishMessageResponse extends Response {
     body: {
@@ -14,19 +28,7 @@ export interface PublishMessageResponse extends Response {
     };
 }
 export interface ConsumeMessageResponse extends Response {
-    body: {
-        MessageId: string;
-        MessageBodyMD5: string;
-        PublishTime: number;
-        NextConsumeTime: number;
-        FirstConsumeTime: number;
-        ConsumedTimes: number;
-        ReceiptHandle: string;
-        MessageBody: string;
-        MessageTag: string;
-        MessageKey?: string;
-        [propName: string]: any;
-    }[];
+    body: Message[];
 }
 /**
  * MQ的client,用于保存aliyun账号消息,以及发送http请求
@@ -225,3 +227,11 @@ export interface MQConsumer {
      */
     ackMessage(receiptHandles: string[]): Promise<Response>;
 }
+declare const consume: (app: Application & {
+    mqConsumerCallback: Map<string, any>;
+}, tag: string, fn: any) => void;
+export { consume };
+declare const transProduce: (app: Application & {
+    mqTransProducerCallback: Map<string, any>;
+}, tag: string, fn: any) => void;
+export { transProduce };

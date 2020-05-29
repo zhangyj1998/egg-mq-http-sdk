@@ -1,5 +1,7 @@
 import { MQClient } from '@aliyunmq/mq-http-sdk';
 import { Application } from 'egg';
+import { isArray } from 'util';
+import { ConsumeMessageResponse } from '.';
 
 export default (app: Application) => {
 
@@ -12,14 +14,42 @@ export default (app: Application) => {
         app.logger.error(`mq_start error`, error);
     }
 
-    app.messenger.on('mq_receive', async ({ conf, res }) => {
-        const { service, method } = conf;
-        if (!service || !method) {
+    app.messenger.on('mq_consumer_receive', async (res: ConsumeMessageResponse) => {
+        if (!isArray(res.body) || res.body.length === 0) {
+            return;
+        }
+        const cb = (app as any).mqConsumerCallback;
+        if (!cb) {
+            return;
+        }
+        const fn = cb.get(res.body[0].MessageTag);
+        if (!fn) {
             return;
         }
         ctx.runInBackground(async () => {
-            await ctx.service[service][method](res);
-        });
+            for (const b of res.body) {
+                await fn(b);
+            }
+        })
+    });
+
+    app.messenger.on('mq_trans_producer_receive', async (res: ConsumeMessageResponse) => {
+        if (!isArray(res.body) || res.body.length === 0) {
+            return;
+        }
+        const cb = (app as any).mqTransProducerCallback;
+        if (!cb) {
+            return;
+        }
+        const fn = cb.get(res.body[0].MessageTag);
+        if (!fn) {
+            return;
+        }
+        ctx.runInBackground(async () => {
+            for (const b of res.body) {
+                await fn(b);
+            }
+        })
     });
 
 };
