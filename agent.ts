@@ -17,6 +17,7 @@ export interface ConsumerConfig {
     messageTags: string[];
     numOfMessages: number;
     waitSeconds: number;
+    transOrder?: boolean; 
 }
 
 export interface MqHttpSdkConfig {
@@ -90,7 +91,12 @@ async function consumeHalfMessage(agent: Agent, p: { conf: ProducerConfig, insta
 // 消费者长轮询进行消息消费
 async function consumeMessage(agent: Agent, c: { conf: ConsumerConfig, instance: MQConsumer }) {
     try {
-        const res = await c.instance.consumeMessage(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
+        let res;
+        if(c.conf.transOrder){
+            res = await c.instance.consumeMessageOrderly(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
+        }else{
+            res = await c.instance.consumeMessage(c.conf.numOfMessages || 3, c.conf.waitSeconds || 3);
+        }
         agent.messenger.sendRandom('mq_consumer_receive', { conf: c.conf, res });
     } catch (error) {
         if (error.Code !== 'MessageNotExist') {
